@@ -7,7 +7,6 @@ The **Filter Function** is used to refine a dataset by applying two types of fil
 
 These filters allow users to extract relevant information based on specific criteria or selection preferences.
 
-
 ## 1. Row Filter
 
 The **Row Filter** is responsible for filtering records (rows) from the dataset based on certain input conditions.
@@ -21,7 +20,6 @@ Then only rows where the `status` column has the value `"active"` will be includ
 
 ### Use Case:
 Useful for narrowing down the data to only include rows that meet specific criteria such as date ranges, statuses, user IDs, etc.
-
 
 ## 2. Column Filter
 
