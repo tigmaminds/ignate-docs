@@ -86,30 +86,6 @@ Ignate is built on modern cloud-native principles ensuring:
 ## Support & Resources
 
 ### Documentation
-- [Integrations](./integrations.md)
-
-### Community
-- **Help Center**: Submit tickets and browse FAQs
-- **Community Forum**: Connect with other Ignate users
-- **Office Hours**: Weekly Q&A sessions with our team
-
-### Contact Information
-- **Technical Support**: support@ignate.com
-- **Sales & Partnerships**: sales@ignate.com
-- **General Inquiries**: info@ignate.com
-
-## What's New
-
-Stay updated with the latest Ignate features and improvements:
-
-- **Recent Updates**: Check our [changelog](./CHANGELOG.md) for new features
-- **Roadmap**: See what's coming next in our [product roadmap](./ROADMAP.md)
-- **Release Notes**: Detailed information about each platform update
-
----
-
-**Ready to get started?** Log in to your Ignate workspace and begin your data journey today.
-
-For additional questions or support, don't hesitate to reach out to our team. We're here to help you succeed with your data initiatives.
+- [Integrations](./integrations)
 
 *Welcome to the future of data platforms. Welcome to Ignate.*
