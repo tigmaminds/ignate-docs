@@ -1,4 +1,4 @@
-# Welcome to Ignate Data Platform
+# Welcome to Ignate Docs
 
 **Ignate** is a powerful, modern data platform designed to streamline your data workflows and unlock insights from your organization's data assets.
 
