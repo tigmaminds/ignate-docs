@@ -21,7 +21,7 @@ The `main` branch is protected. No one (including collaborators) can push direct
    ```bash
    git clone https://github.com/<your-username>/<repo-name>.git
    cd <repo-name>
-````
+   ```
 
 3. **Create a new branch**
 
