@@ -83,8 +83,6 @@ Ignate is built on modern cloud-native principles ensuring:
 - Feature engineering and experimentation
 - Collaborative research environments
 
-## Support & Resources
-
 ### Documentation
 - [Integrations](./integrations)
 
