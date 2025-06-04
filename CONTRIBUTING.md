@@ -19,19 +19,19 @@ The `main` branch is protected. No one (including collaborators) can push direct
 2. **Clone your fork**
 
    ```bash
-   git clone https://github.com/<your-username>/<repo-name>.git
-   cd <repo-name>
+   git clone https://github.com/tigmaminds/ignate-docs.git
+   cd ignate-docs
    ```
 
 3. **Create a new branch**
 
    ```bash
-   git checkout -b my-feature-branch
+   git checkout -b my-change-branch
    ```
 
 4. **Make your changes**
 
-   Add your code, fix bugs, write tests, or update documentation.
+   Add your changes, fix bugs, write tests, or update documentation.
 
 5. **Commit your changes**
 
@@ -42,7 +42,7 @@ The `main` branch is protected. No one (including collaborators) can push direct
 6. **Push to your fork**
 
    ```bash
-   git push origin my-feature-branch
+   git push origin my-change-branch
    ```
 
 7. **Open a Pull Request**
