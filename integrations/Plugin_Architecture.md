@@ -48,19 +48,112 @@ graph TD
 
 The `NodePlugin` interface is the central contract that all plugins must implement. It defines the standard lifecycle and behavior of a node.
 
+```java
+// Located in a shared SDK module, e.g., 'ignate-plugin-sdk'
+package com.yourcompany.ignate.plugin;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * The core interface for all executable nodes in the flow builder.
+ * Implementations of this interface are discovered at runtime via Java's ServiceLoader.
+ */
+public interface NodePlugin {
+
+    /**
+     * Provides metadata about the plugin.
+     * This metadata is used by the frontend to render the node in the editor,
+     * build its configuration panel, and display descriptive information.
+     *
+     * @return A PluginMetadata object containing the node's identity and configuration schema.
+     */
+    PluginMetadata getMetadata();
+
+    /**
+     * Validates the configuration provided by the user for a specific node instance.
+     * This method is typically called when a flow is saved to provide early feedback.
+     *
+     * @param configuration A map representing the JSON configuration from the UI.
+     * @return A list of validation errors. An empty list signifies that the configuration is valid.
+     */
+    List<ValidationError> validate(Map<String, Object> configuration);
+
+    /**
+     * Executes the primary logic of the node.
+     * This method is called by the Node Execution Service during a flow run.
+     *
+     * @param context The execution context, which provides all necessary data for the node
+     *                to perform its function, including input from previous nodes and access to secrets.
+     * @return An ExecutionResult, containing the output data and the execution status (SUCCESS or FAILURE).
+     */
+    ExecutionResult execute(ExecutionContext context);
+}
+```
+
 ### 2.2. 📋 `PluginMetadata` and Configuration
 
 The `getMetadata()` method returns a `PluginMetadata` object, which tells the UI how to render the node and its settings form.
 
+```java
+public class PluginMetadata {
+    private final String type; // A unique identifier, e.g., "HTTP_REQUEST"
+    private final String displayName; // User-friendly name, e.g., "HTTP Request"
+    private final String description;
+    private final List<ConfigParameter> configSchema; // Defines the fields for the UI form
+
+    // Constructor and getters
+}
+
+public class ConfigParameter {
+    private final String key; // The name of the parameter
+    private final String label; // The display label in the UI
+    private final String type; // E.g., "text", "textarea", "select", "password", "code_editor"
+    private final boolean required;
+    private final List<String> options; // For "select" type
+    
+    // Constructor and getters
+}
+```
+
 ### 2.3. 🎯 The `ExecutionContext`
 
 This class is a data carrier that provides a plugin with everything it needs to execute, acting as a sandbox to isolate the plugin from the core engine.
+
+```java
+public class ExecutionContext {
+    private final UUID flowInstanceId;
+    private final String nodeInstanceId;
+    private final Map<String, Object> nodeConfiguration; // User-configured values for this specific node
+    private final Map<String, Object> inputData;      // A map of outputs from the previous node(s)
+    private final SecretsManager secretsManager;    // A service to securely fetch credentials (e.g., API keys)
+    private final Logger logger;                    // A contextual logger for this node execution
+    
+    // Constructor and getters
+}
+```
 
 **💡 Template Support**: The `inputData` can be populated with a templating engine like **Mustache** or **Freemarker** to allow users to dynamically reference outputs from previous nodes (e.g., `{{previous_node_id.output_key}}`).
 
 ### 2.4. 📤 The `ExecutionResult`
 
 The `execute` method returns an `ExecutionResult`, which standardizes the output of every node.
+
+```java
+public class ExecutionResult {
+    private final ExecutionStatus status; // SUCCESS or FAILURE
+    private final Map<String, Object> outputData; // Data to be passed to the next node
+    private final String errorMessage; // Null if status is SUCCESS
+    
+    public static ExecutionResult success(Map<String, Object> outputData) {
+        // ...
+    }
+
+    public static ExecutionResult failure(String errorMessage) {
+        // ...
+    }
+}
+```
 
 ## 🔍 Plugin Discovery and Loading (`ServiceLoader`)
 
@@ -92,9 +185,37 @@ sequenceDiagram
 2. **📝 Service Declaration**: Inside each plugin's JAR, a special file must be created at the path: `META-INF/services/com.yourcompany.ignate.plugin.NodePlugin`.
 
 3. **📄 File Content**: This file contains a single line: the fully qualified name of the class that implements the `NodePlugin` interface. For example, for the HTTP plugin:
+   ```
+   com.yourcompany.ignate.plugins.http.HttpNodePlugin
+   ```
 
 4. **🔄 Loading in the Node Execution Service**: When the service starts, it dynamically discovers all available plugins on its classpath:
 
+   ```java
+   import java.util.ServiceLoader;
+   import java.util.Map;
+   import java.util.function.Function;
+   import java.util.stream.Collectors;
+
+   public class PluginRegistry {
+       private final Map<String, NodePlugin> plugins;
+
+       public PluginRegistry() {
+           this.plugins = loadPlugins();
+       }
+
+       private Map<String, NodePlugin> loadPlugins() {
+           ServiceLoader<NodePlugin> loader = ServiceLoader.load(NodePlugin.class);
+           return loader.stream()
+               .map(ServiceLoader.Provider::get)
+               .collect(Collectors.toMap(plugin -> plugin.getMetadata().getType(), Function.identity()));
+       }
+
+       public NodePlugin getPlugin(String type) {
+           return plugins.get(type);
+       }
+   }
+   ```
 
 ## 🚀 Deployment Workflow
 
@@ -120,6 +241,87 @@ graph LR
 
 5. **🚀 Deployment**: To deploy, the JAR file is simply copied into a `plugins` directory that is part of the **Node Execution Service's** classpath. When the service restarts, the new node type becomes automatically available.
 
+## 🌟 Example: HTTP Plugin Implementation
+
+Here's how a complete HTTP plugin would look:
+
+```java
+@Component
+public class HttpNodePlugin implements NodePlugin {
+
+    @Override
+    public PluginMetadata getMetadata() {
+        return PluginMetadata.builder()
+            .type("HTTP_REQUEST")
+            .displayName("HTTP Request")
+            .description("Makes an outbound HTTP call to any REST API")
+            .configSchema(List.of(
+                ConfigParameter.builder()
+                    .key("url")
+                    .label("URL")
+                    .type("text")
+                    .required(true)
+                    .build(),
+                ConfigParameter.builder()
+                    .key("method")
+                    .label("HTTP Method")
+                    .type("select")
+                    .required(true)
+                    .options(List.of("GET", "POST", "PUT", "DELETE"))
+                    .build(),
+                ConfigParameter.builder()
+                    .key("headers")
+                    .label("Headers")
+                    .type("key_value_editor")
+                    .required(false)
+                    .build(),
+                ConfigParameter.builder()
+                    .key("body")
+                    .label("Request Body")
+                    .type("code_editor")
+                    .required(false)
+                    .build()
+            ))
+            .build();
+    }
+
+    @Override
+    public List<ValidationError> validate(Map<String, Object> config) {
+        List<ValidationError> errors = new ArrayList<>();
+        
+        String url = (String) config.get("url");
+        if (url == null || url.trim().isEmpty()) {
+            errors.add(new ValidationError("url", "URL is required"));
+        } else if (!isValidUrl(url)) {
+            errors.add(new ValidationError("url", "Invalid URL format"));
+        }
+        
+        return errors;
+    }
+
+    @Override
+    public ExecutionResult execute(ExecutionContext context) {
+        try {
+            Map<String, Object> config = context.getNodeConfiguration();
+            String url = resolveTemplate((String) config.get("url"), context.getInputData());
+            String method = (String) config.get("method");
+            
+            HttpResponse response = makeHttpRequest(url, method, config);
+            
+            Map<String, Object> output = Map.of(
+                "statusCode", response.statusCode(),
+                "body", parseResponseBody(response.body()),
+                "headers", response.headers().map()
+            );
+            
+            return ExecutionResult.success(output);
+        } catch (Exception e) {
+            context.getLogger().error("HTTP request failed", e);
+            return ExecutionResult.failure("HTTP request failed: " + e.getMessage());
+        }
+    }
+}
+```
 
 ## ✨ Key Benefits
 
