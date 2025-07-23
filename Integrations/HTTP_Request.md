@@ -1,58 +1,79 @@
-# HTTP Request
+
+# HttpRequest Node
 
 ## Purpose
-
-The HTTP Request Node is used to make configurable HTTP calls within Spark pipelines. It is ideal for interacting with web services or sending notifications.
-
----
+The HttpRequest Node enables Spark pipelines to make HTTP requests to external APIs and web services. It's designed to fetch data from REST endpoints, send data to external services, and integrate with web-based APIs as part of data workflows.
 
 ## How It Works
 
-- **Supports RESTful communication**: Works with GET, POST, PUT, DELETE.
-- **Custom Headers**: Add headers like `Content-Type`, `Authorization`.
-- **Payload Handling**: Can send plain text or structured JSON.
-- **Timeouts and Error Handling**: Configure retries, timeouts, and error propagation.
+**Input:** Receives data from upstream nodes that can be used as parameters, headers, or request body
 
----
+**Configuration:**  
+- **HTTP Method:** GET, POST, PUT, DELETE, PATCH  
+- **URL:** Target endpoint URL (can be dynamic using input data)  
+- **Headers:** Custom headers including authentication tokens  
+- **Request Body:** JSON, form-data, or raw data payload  
+- **Authentication:** Bearer tokens, API keys, or custom auth headers
 
-## Use Cases
-
-- Sending alerts (e.g., Slack or webhook notifications).
-- Posting processed data to web servers.
-- Interacting with external services like APIs or microservices.
-- Triggering downstream jobs via webhooks.
-
----
+**Execution:**  
+- Constructs HTTP request using configuration and input data  
+- Sends request to specified endpoint  
+- Captures response data, status codes, and timing information  
+- Outputs response data for downstream processing
 
 ## Example
 
-**Scenario**: Send a POST request to notify job completion
+**Scenario:** Fetch user data from external API  
 
-- **Endpoint**: `https://hooks.example.com/notify`
-- **Method**: `POST`
-- **Headers**:
-  - `Content-Type`: `application/json`
-- **Payload**:
+**Input Data:**
 
-  ```json
+```
+[
+  { "user_id": 123, "api_token": "abc123" },
+  { "user_id": 456, "api_token": "def456" }
+]
+```
+
+**Configuration:**  
+- **Method:** GET  
+- **URL:** https://api.example.com/users/[user_id]  
+- **Headers:**  
+  - Authorization: Bearer [api_token]  
+  - Content-Type: application/json  
+
+**Output (for each user):**
+
+```
+[
   {
-    "jobId": "load_2025_06_03",
-    "status": "success",
-    "timestamp": "2025-06-03T09:00:00Z"
+    "user_id": 123,
+    "api_token": "abc123",
+    "statusCode": 200,
+    "response": { "id": 123, "name": "Alice", "email": "alice@example.com" },
+    "processTime": "150ms",
+    "error": null
   }
-  ```
+]
+```
 
----
+## Use Cases
+- **Data Enrichment:** Fetch additional data from external APIs to enrich existing datasets  
+- **Real-time Integration:** Connect to live APIs for real-time data updates  
+- **Microservice Communication:** Interact with internal microservices in data pipelines  
+- **Third-party API Integration:** Connect to external services (payment gateways, social media APIs, etc.)  
+- **Data Synchronization:** Sync data between different systems via REST APIs  
+- **API Testing:** Validate API endpoints and response formats in data workflows  
 
 ## Summary
 
-| Feature              | Description                           |
-| -------------------- | ------------------------------------- |
-| Methods Supported    | GET, POST, PUT, DELETE                |
-| Payload Format       | JSON, text, form-data                 |
-| Response Handling    | Returned as string/JSON to downstream |
-| Retry/Timeout Config | Yes                                   |
+| Feature              | Description |
+|----------------------|-------------|
+| **HTTP Methods**     | GET, POST, PUT, DELETE, PATCH |
+| **Dynamic URLs**     | Support for parameterized URLs using input data |
+| **Authentication**   | Bearer tokens, API keys, custom headers |
+| **Request Body**     | JSON, form-data, raw data support |
+| **Error Handling**   | Captures and formats HTTP errors |
+| **Performance Tracking** | Measures request/response timing |
+| **Response Processing** | Outputs structured response data |
 
----
-
-> ⚠️ Use with proper error handling to avoid pipeline breaks.
+> ✅ **Best used when integrating external APIs and web services into data pipelines, enabling real-time data exchange and system integration.**
