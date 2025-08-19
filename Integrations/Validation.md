@@ -17,14 +17,12 @@ This node is useful when:
 The node supports two validation approaches:
 
 ### **Schema Tab**
-![Schema Tab Example]
 - **JSON Schema**: Write custom validation rules using JSON Schema syntax
 - **Advanced Patterns**: Regular expressions and complex validation logic
 - **Custom Error Messages**: Define specific error messages for validation failures
 - **Direct JSON Editor**: Write validation schemas directly in the JSON editor
 
 ### **Validation Tab**
-![Validation Tab Example]
 - **Predefined Operations**: Ready-to-use validation rules like `isJSON`
 - **Common Validations**: Email format, phone numbers, required fields, data types
 - **User-Friendly**: Simple dropdown selections and configurations
