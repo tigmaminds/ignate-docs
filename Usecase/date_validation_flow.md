@@ -1,5 +1,5 @@
 
-# 📄 Document: API Flow for Date Validation
+# 📄 Document: API Flow for Date Validation with Current Date
 
 ## Overview  
 This workflow validates whether the **requested date** (passed as a query parameter in the API call) matches the **current system date**. The API response is structured as:
@@ -10,6 +10,9 @@ This workflow validates whether the **requested date** (passed as a query parame
 }
 ```
 
+## Workflow Diagram
+![Workflow Diagram](images/date_validation.png)
+
 ---
 
 ## Node Details  
@@ -19,8 +22,7 @@ This workflow validates whether the **requested date** (passed as a query parame
 - **Endpoint Example:**  
   ```
   GET /checkDateCurrent?date=2025-08-19
-  ```  
-- **Understandable Name:** `checkDateCurrent`  
+  ```   
 - **Input:** Query parameter `date` in the format `YYYY-MM-DD`.  
 - **Output:** Forwards request payload to downstream processing.  
 
@@ -28,7 +30,6 @@ This workflow validates whether the **requested date** (passed as a query parame
 
 ### 2. **Json-Extract**  
 - **Purpose:** Extracts the requested date from the incoming query parameters.  
-- **Understandable Name:** `extract requested date`  
 - **Configuration:**  
 
 | Column            | Data Type | Output Column | JSON Query |
@@ -43,7 +44,6 @@ This workflow validates whether the **requested date** (passed as a query parame
 
 ### 3. **Filter**  
 - **Purpose:** Ensures only the `date` field moves forward in the workflow.  
-- **Understandable Name:** `filter date`  
 - **Input:** Extracted query parameter.  
 - **Output:** Passes along the requested `date` only.  
 
@@ -51,7 +51,6 @@ This workflow validates whether the **requested date** (passed as a query parame
 
 ### 4. **Add-Column**  
 - **Purpose:** Adds the **current timestamp** to the data flow for comparison.  
-- **Understandable Name:** `add current date`  
 - **Configuration:**  
 
 | New Column  | Operation   | Value                  | Data Type |
@@ -68,7 +67,6 @@ This workflow validates whether the **requested date** (passed as a query parame
 
 ### 5. **Transform**  
 - **Purpose:** Extracts only the `YYYY-MM-DD` part of the current timestamp for comparison.  
-- **Understandable Name:** `get only date`  
 - **Configuration:**  
 
 | Column      | Operation | Value  |
@@ -85,11 +83,17 @@ This workflow validates whether the **requested date** (passed as a query parame
 
 ### 6. **Filter (date = current date)**  
 - **Purpose:** Filters rows where the requested date is equal to the current system date.  
-- **Understandable Name:** `date = current date`  
+- **Understandable Name:** `date == current date`  
 
-**Configuration Screenshot:**  
+| Column | Operation | Value        |
+|--------|-----------|--------------|
+| date   | ==        | currentDate  |
 
-![Filter Node Config – date=current date](Untitled15.png)  
+- **Example:**  
+  - Requested Date → `2025-08-19`  
+  - Current Date   → `2025-08-19`  
+  - ✅ Row success the equality check and passes into this filter branch. 
+
 
 ---
 
@@ -110,7 +114,6 @@ This workflow validates whether the **requested date** (passed as a query parame
 - **Purpose:** Filters rows where the requested date does not match the current system date.  
 - **Understandable Name:** `date != current date`  
 
-- **Configuration (Tabular):**  
 
 | Column | Operation | Value        |
 |--------|-----------|--------------|
