@@ -17,7 +17,7 @@ This workflow validates whether the **requested date** (passed as a query parame
 
 ## Node Details  
 
-### 1. **WebAPI**  
+### 1. **Web API**  
 - **Purpose:** Creates an API endpoint to receive requests.  
 - **Endpoint Example:**  
   ```
